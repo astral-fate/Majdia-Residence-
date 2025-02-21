@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توزيع المهام حسب الحالة - الربع الثالث 2024</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #eeece1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 90%;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .charts-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .chart-box {
+            width: 48%; /* Adjusted for table */
+            margin-bottom: 20px;
+            display: flex; /* Add flexbox to align chart and table */
+            flex-direction: row;  /* Align items horizontally */
+            align-items: center; /* Vertically center items */
+        }
+        .full-width {
+            width: 100%;
+        }
+        h1, h2, h3 {
+            color: #776262;
+            text-align: center;
+        }
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        .task-table th, .task-table td {
+            padding: 12px;
+            text-align: right;
+            border: 1px solid #ddd;
+        }
+        .task-table th {
+            background-color: #776262;
+            color: #fff;
+            position: sticky;
+            top: 0;
+        }
+        .task-table tr:nth-child(even) {
+            background-color: #f9f8f4;
+        }
+        .task-table tr:hover {
+            background-color: #f1efe5;
+        }
+        .completed {
+            background-color: #a78645 !important;
+            color: #fff;
+        }
+        .in-progress {
+            background-color: #a99163 !important;
+            color: #fff;
+        }
+        .delayed {
+            background-color: #776262 !important;
+            color: #fff;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 80px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #776262;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #eeece1;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background-color: #a78645;
+            color: white;
+        }
+        .tab:hover:not(.active) {
+            background-color: #a99163;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .status-summary {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status-box {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 120px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-box h3 {
+            margin: 0;
+            color: white;
+        }
+        .status-box p {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0 5px;
+            color: white;
+        }
+        .dept-chart-container {
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        .dept-table {  /* Styles for the department table */
+            width: 50%; /* Adjust width as needed */
+            border-collapse: collapse;
+            margin-right: 10px; /* Space between chart and table */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners are respected */
+        }
+
+        .dept-table th, .dept-table td {
+            padding: 8px 12px;
+            text-align: right;
+            border: 1px solid #ddd;
+        }
+
+        .dept-table th {
+            background-color: #776262;
+            color: #fff;
+        }
+
+        .dept-table tr:nth-child(even) {
+            background-color: #f9f8f4;
+        }
+
+        .dept-table tr:hover {
+            background-color: #f1efe5;
+        }
+
+        @media (max-width: 768px) {
+            .chart-box {
+                width: 100%;
+                flex-direction: column; /* Stack chart and table on small screens */
+                align-items: stretch; /* Occupy full width */
+            }
+            .dept-table {
+                width: 100%;
+                margin-right: 0; /* Remove right margin */
+            }
+            .status-summary {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        .dept-status { /*  rectangular tag */
+            display: inline-block;
+            padding: 5px 10px;  /* Slightly more padding for larger tag */
+            border-radius: 5px;    /* Slightly rounded corners */
+            font-weight: bold;
+            color: white;         /* White text */
+            text-align: center;
+            min-width: 80px;      /* Minimum width */
+            font-size: 0.9em;   /* Slightly smaller font */
+        }
+
+        .dept-status.completed {
+            background-color: #a78645;  /* Gold-ish */
+        }
+
+        .dept-status.in-progress {
+            background-color: #a99163; /*  Another shade of brown */
+        }
+
+        .dept-status.delayed {
+            background-color: #776262;  /* Dark Brown */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>لوحة متابعة قرارات وتوجيهات مجلس الإدارة</h1>
+        <h2>الربع الثالث من العام 2024</h2>
+
+        <!-- Status Summary Boxes -->
+        <div class="status-summary">
+            <div class="status-box" style="background-color: #a78645;">
+                <h3>مكتمل</h3>
+                <p>15</p>
+                <span>من أصل 19 مهمة</span>
+            </div>
+            <div class="status-box" style="background-color: #a99163;">
+                <h3>قيد التنفيذ</h3>
+                <p>3</p>
+                <span>من أصل 19 مهمة</span>
+            </div>
+            <div class="status-box" style="background-color: #776262;">
+                <h3>متأخر</h3>
+                <p>1</p>
+                <span>من أصل 19 مهمة</span>
+            </div>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="chart-container full-width">
+            <h3>توزيع المهام حسب الحالة</h3>
+            <canvas id="statusChart" height="100"></canvas>
+        </div>
+
+        <div class="charts-row">
+            <!-- Department Distribution Pie Chart -->
+            <div class="chart-box">
+                <div class="chart-container">
+                    <h3>توزيع المهام حسب الإدارات</h3>
+                    <canvas id="deptChart"></canvas>
+                </div>
+                <table class="dept-table">
+                    <thead>
+                        <tr>
+                            <th>الإدارة</th>
+                            <th>عدد المهام</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>مجلس الإدارة</td><td>2</td></tr>
+                        <tr><td>اللجنة التنفيذية</td><td>1</td></tr>
+                        <tr><td>مكتب إدارة المشاريع</td><td>2</td></tr>
+                        <tr><td>الإدارة التنفيذية</td><td>3</td></tr>
+                        <tr><td>إدارة رأس المال البشري</td><td>4</td></tr>
+                        <tr><td>إدارة المشاريع</td><td>3</td></tr>
+                        <tr><td>إدارة المبيعات</td><td>1</td></tr>
+                        <tr><td>الإدارة المالية</td><td>1</td></tr>
+                        <tr><td>إدارة تقنية المعلومات</td><td>1</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        
+        </div>
+
+        <!-- Tabs for different views -->
+        <div class="tabs">
+            <div class="tab active" onclick="openTab(event, 'completedTasks')">مكتملة</div>
+            <div class="tab" onclick="openTab(event, 'inProgressTasks')">قيد التنفيذ</div>
+            <div class="tab" onclick="openTab(event, 'delayedTasks')">متأخرة</div>
+        </div>
+
+        <!-- Completed Tasks Tab -->
+        <div id="completedTasks" class="tab-content active">
+            <h3>المهام المكتملة</h3>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>البند</th>
+                        <th>الإدارة المعنية</th>
+                        <th>توجيهات المجلس</th>
+                        <th>التاريخ المتوقع للانتهاء</th>
+                        <th>الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>مجلس الأدارة</td>
+                        <td>طلب المجلس من الإدارة التنفيذية إضافة التواريخ المتوقعة لتنفيذ القرارات والمسؤول عنها سواء كانت الإدارة التنفيذية أو أحد لجان المجلس.</td>
+                        <td>-</td>
+                        <td>تم العمل بذلك</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>مجلس الأدارة</td>
+                        <td>أشار المجلس إلى أن بعض القرارات لم تتم الإفادة بإنجازها ثم وجه بأن يتم القيام بذلك الاجتماع القادم.</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>مكتب إدارة المشاريع</td>
+                        <td>طلب المجلس من مستشاري الطرح مشاركة مؤشرات الأداء للشركات التي تعمل في القطاع العقاري من منظور محللي السوق بشكل جوهري لتكون أحد الأدوات التي تخدم المجلس والشركة في تقييم أدائها، بحيث يتم استعراضها في اجتماعات المجلس القادمة بشكل مستمر.</td>
+                        <td>31-12-2024</td>
+                        <td>تم اخطار المستشار المالي وجاري العمل عليها كما سيتم مشاركتها خلال الأسبوع القادم</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>مكتب إدارة المشاريع</td>
+                        <td>طلب المجلس من مستشاري الطرح بالتأكد من أن هيكل الشركة الحالي وإجراءاتها المالية متوافقة مع متطلبات كون أسهم الشركة نقية.</td>
+                        <td>18-12-2024</td>
+                        <td>أكد مستشاري الطرح BSF وEY لهيئة السوق المالية السعودية (CMA) هذا الشهر أن هيكل الشركة وإعداد تقاريرها المالية يتوافقان مع متطلبات الشركات المدرجة في السوق الرئيسية. (تم توقيع عقد اللجنة الشرعية)</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>الإدارة التنفيذية</td>
+                        <td>طلب المجلس من الإدارة التنفيذية أن يتم توضيح عدد الوحدات المراد تنفيذها خلال العام الجاري ومقارنته بما تم تنفيذه.</td>
+                        <td>-</td>
+                        <td>عدد الوحدات المراد تنفيذها للعام الجاري 1632 وحدة وهو أعلى بنسبة 13.5% من العام الماضي 2023 ؛ بالإضافة إلى مشروع تجاري بمساحة 7,500م2</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>الإدارة التنفيذية</td>
+                        <td>أشار المجلس إلى النظام الجديد الصادر من مجلس الوزراء حول عدم إطلاق التيار الكهربائي إلا بعد صدور شهادة إتمام البناء، ثم وجه الإدارة التنفيذية بالتعامل مع النظام الجديد لتلافي التأخير في سير أعمال الشركة.</td>
+                        <td>-</td>
+                        <td>تم العمل على ذلك بالفعل وإخطار جميع الجهات المعنية بقرار مجلس الوزراء فور صدوره، كما تم عكسه على رحلة المشروع واعتماده كأحد أهم معالم المشروع</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>الإدارة التنفيذية</td>
+                        <td>وجه المجلس الادارة التنفيذية بالعمل على اعادة تعريف المخزون بحيث يمكن من خلاله متابعة أعمال الشركة والإدارات المعنية على ان يتم مناقشة ذلك باللجنة التنفيذية والرفع للمجلس بما يتم التوصل إليه.</td>
+                        <td>-</td>
+                        <td>تعريف المخزون</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>إدارة رأس المال البشري</td>
+                        <td>طلب المجلس من إدارة رأس المال البشري العمل على إعداد باقة متكاملة من الامتيازات تتضمن برنامج الحفاظ على الموظفين والمكافآت السنوية وغيرها بحيث تتصف بالشمولية وتعزز من حفاظ الشركة على الكفاءات بالإضافة إلى زيادة قدرة الشركة على الاستقطاب.</td>
+                        <td>-</td>
+                        <td>رفعت للجنة الترشيحات والمكافآت بإنتظار الاعتماد للتطبيق</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>إدارة رأس المال البشري</td>
+                        <td>اعتمد مجلس الإدارة سلم الأجور الموصى به من لجنة الترشيحات والمكافآت على أن يتم العمل على الباقة المتكاملة للتعويضات مع الافادة بما يخص أثر ذلك على المصاريف الإدارية وعرضها على المجلس في اجتماعه القادم.</td>
+                        <td>-</td>
+                        <td>رفعت للجنة الترشيحات والمكافآت بإنتظار الاعتماد للتطبيق</td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>إدارة رأس المال البشري</td>
+                        <td>أكد المجلس على أهمية حوافز المبيعات والمشاريع ومراعاة اختلاف طبيعة العمل والمعايير في كل منها.</td>
+                        <td>-</td>
+                        <td>سوف يتم عرضه في الاجتماع في عرض منفصل</td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td>إدارة رأس المال البشري</td>
+                        <td>وافق المجلس على اعتماد الهيكل التنظيمي الموافق عليه من قبل لجنة الترشيحات والمكافآت.</td>
+                        <td>-</td>
+                        <td>تم التعميم والعمل عليه</td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>إدارة المشاريع</td>
+                        <td>وجه المجلس الإدارة التنفيذية بالعمل على الاستفادة من تجربة مشروع دروازة لتلافي أي تحديات مماثلة في المستقبل، بالإضافة إلى عمل مقارنة مع مشاريع مشابهة من جوانب مختلفة ليكون هناك تصور أوضح عن التحديات في المشروع.</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td>إدارة المبيعات</td>
+                        <td>إعداد خطة تسويقية للمنتجات الجديدة</td>
+                        <td>25-9-2024</td>
+                        <td>تم اعتمادها من قبل المجلس</td>
+                    </tr>
+                    <tr>
+                        <td>17</td>
+                        <td>الإدارة المالية</td>
+                        <td>إعداد تقرير عن التدفقات النقدية المتوقعة للربع الرابع</td>
+                        <td>30-9-2024</td>
+                        <td>تم رفعه للجنة المراجعة</td>
+                    </tr>
+                    <tr>
+                        <td>19</td>
+                        <td>إدارة المشاريع</td>
+                        <td>دراسة جدوى للمشاريع المقترحة للعام القادم</td>
+                        <td>15-9-2024</td>
+                        <td>تم مناقشتها في اجتماع اللجنة التنفيذية</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- In Progress Tasks Tab -->
+        <div id="inProgressTasks" class="tab-content">
+            <h3>المهام قيد التنفيذ</h3>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>البند</th>
+                        <th>الإدارة المعنية</th>
+                        <th>توجيهات المجلس</th>
+                        <th>التاريخ المتوقع للانتهاء</th>
+                        <th>الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>3</td>
+                        <td>اللجنة التنفيذية</td>
+                        <td>وجه المجلس الإدارة التنفيذية بمتابعة المشاريع والمبادرات الاستراتيجية بمفهومها الواسع والتي تتضمن المشاريع الإدارية والمشاريع التنفيذية وذلك بإشراف اللجنة التنفيذية.</td>
+                        <td>يناير 2025</td>
+                        <td>مرفق بالعرض</td>
+                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td>إدارة المشاريع-قطاع التطوير والاستثمار</td>
+                        <td>أكد المجلس على أنه يجب على الإدارة التنفيذية أن تلتزم بأنه في حال تقديم منتجات جديدة عمل الدراسات اللازمة لتكون متوافقة مع متطلبات السوق، بالإضافة إلى أهمية مراعاة اعتماد التصاميم بآلية تضمن مراجعتها من جميع الأطراف المعنية بالشركة.</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>18</td>
+                        <td>إدارة تقنية المعلومات</td>
+                        <td>تطوير نظام متابعة المشاريع الإلكتروني</td>
+                        <td>30-11-2024</td>
+                        <td>تم الانتهاء من 70% من المشروع</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Delayed Tasks Tab -->
+        <div id="delayedTasks" class="tab-content">
+            <h3>المهام المتأخرة</h3>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>البند</th>
+                        <th>الإدارة المعنية</th>
+                        <th>توجيهات المجلس</th>
+                        <th>التاريخ المتوقع للانتهاء</th>
+                        <th>الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>15</td>
+                        <td>إدارة رأس المال البشري</td>
+                        <td>تحديث الهيكل التنظيمي للشركة وفقًا للمتغيرات الجديدة</td>
+                        <td>15-10-2024</td>
+                        <td>بانتظار موافقة اللجنة التنفيذية</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Sample chart data (replace with your actual data)
+        const statusData = {
+            labels: ['مكتمل', 'قيد التنفيذ', 'متأخر'],
+            datasets: [{
+                label: 'عدد المهام',
+                data: [15, 3, 1],
+                backgroundColor: [
+                    '#a78645',
+                    '#a99163',
+                    '#776262'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const deptData = {
+            labels: ['مجلس الإدارة', 'اللجنة التنفيذية', 'مكتب إدارة المشاريع', 'الإدارة التنفيذية', 'إدارة رأس المال البشري', 'إدارة المشاريع', 'إدارة المبيعات', 'الإدارة المالية', 'إدارة تقنية المعلومات'],
+            datasets: [{
+                label: 'عدد المهام',
+                data: [2, 1, 2, 3, 4, 3, 1, 1, 1],
+                backgroundColor: [
+                    '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const timelineData = {
+            labels: ['أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر', 'يناير'],
+            datasets: [{
+                label: 'عدد المهام',
+                data: [2, 5, 1, 1, 3, 1],
+                backgroundColor: '#4caf50',
+                borderWidth: 1
+            }]
+        };
+
+        // Chart configurations
+        const chartConfig = {
+            type: 'bar',
+            data: statusData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        };
+
+        const pieConfig = {
+            type: 'pie',
+            data: deptData,
+        };
+
+        const timelineConfig = {
+            type: 'line',
+            data: timelineData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        };
+
+        // Initialize charts
+        const statusChart = new Chart(
+            document.getElementById('statusChart'),
+            chartConfig
+        );
+
+        const deptChart = new Chart(
+            document.getElementById('deptChart'),
+            pieConfig
+        );
+
+        const timelineChart = new Chart(
+            document.getElementById('timelineChart'),
+            timelineConfig
+        );
+    </script>
+</body>
+</html>
