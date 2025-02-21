@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توزيع المهام حسب الحالة - الربع الرابع 2024</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #eeece1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 90%;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .charts-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .chart-box {
+             width: 100%; /* Take up full width */
+            display: flex;
+            /* Add flexbox to align chart and table */
+            flex-direction: row;
+            /* Align items horizontally */
+            align-items: stretch;
+            /* Stretch items vertically */
+            justify-content: space-between;
+            /* Space chart and table evenly */
+        }
+        .full-width {
+            width: 100%;
+        }
+        h1, h2, h3 {
+            color: #776262;
+            text-align: center;
+        }
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        .task-table th, .task-table td {
+            padding: 12px;
+            text-align: right;
+            border: 1px solid #ddd;
+        }
+        .task-table th {
+            background-color: #776262;
+            color: #fff;
+            position: sticky;
+            top: 0;
+        }
+        .task-table tr:nth-child(even) {
+            background-color: #f9f8f4;
+        }
+        .task-table tr:hover {
+            background-color: #f1efe5;
+        }
+        .status-cell {
+            background-color: transparent;
+            color: white;
+            text-align: center;
+            font-weight: normal;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            min-width: 80px;
+            font-size: 0.9em;
+        }
+        .status-badge.completed {
+            background-color: #a78645;
+        }
+        .status-badge.in-progress {
+            background-color: #a99163;
+        }
+        .status-badge.delayed {
+            background-color: #776262;
+        }
+        .status-badge.waiting {
+            background-color: #5e8059;
+        }
+        .completed {
+            background-color: #a78645 !important;
+            color: #fff;
+        }
+        .in-progress {
+            background-color: #a99163 !important;
+            color: #fff;
+        }
+        .delayed {
+            background-color: #776262 !important;
+            color: #fff;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 80px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #776262;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #eeece1;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background-color: #a78645;
+            color: white;
+        }
+        .tab:hover:not(.active) {
+            background-color: #a99163;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .status-summary {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status-box {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 120px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-box h3 {
+            margin: 0;
+            color: white;
+        }
+        .status-box p {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0 5px;
+            color: white;
+        }
+        .dept-chart-container {
+            height: 400px;
+            margin-bottom: 30px;
+        }
+        .dept-table {
+            width: 48%;
+            border-collapse: collapse;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .dept-table th, .dept-table td {
+            padding: 8px 12px;
+            text-align: right;
+            border: 1px solid #ddd;
+        }
+        .dept-table th {
+            background-color: #776262;
+            color: #fff;
+        }
+        .dept-table tr:nth-child(even) {
+            background-color: #f9f8f4;
+        }
+        .dept-table tr:hover {
+            background-color: #f1efe5;
+        }
+        @media (max-width: 768px) {
+            .chart-box {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .dept-table {
+                width: 100%;
+                margin-right: 0;
+            }
+            .status-summary {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        .dept-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            min-width: 80px;
+            font-size: 0.9em;
+        }
+        .dept-status.completed {
+            background-color: #a78645;
+        }
+        .dept-status.in-progress {
+            background-color: #a99163;
+        }
+        .dept-status.delayed {
+            background-color: #776262;
+        }
+        .dept-status.waiting {
+            background-color: #5e8059;
+        }
+        .timeline-container {
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        /* ADDED:  Ensure the table and canvas fill their container in chart-box */
+        .chart-container {
+            width: 50%;  /* Chart takes up half the chart-box */
+        }
+
+        .dept-table {
+            width: 50%;  /* Table takes up the other half */
+        }
+
+        /*  Responsiveness Tweaks */
+        @media (max-width: 768px) {
+             .chart-box {
+                flex-direction: column;
+                align-items: center;  /* Center the chart and table */
+             }
+
+             .chart-container, .dept-table {
+                width: 100%;  /* Take full width on small screens */
+                margin-bottom: 15px; /* Add some spacing */
+             }
+         }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>لوحة متابعة قرارات وتوجيهات مجلس الإدارة</h1>
+        <h2>الربع الرابع من العام 2024</h2>
+
+        <!-- Status Summary Boxes -->
+        <div class="status-summary">
+            <div class="status-box" style="background-color: #a78645;">
+                <h3>تم</h3>
+                <p>9</p>
+                <span>من أصل 17 مهمة</span>
+            </div>
+            <div class="status-box" style="background-color: #a99163;">
+                <h3>قيد التنفيذ</h3>
+                <p>6</p>
+                <span>من أصل 17 مهمة</span>
+            </div>
+            <div class="status-box" style="background-color: #776262;">
+                <h3>بانتظار الموافقة</h3>
+                <p>1</p>
+                <span>من أصل 17 مهمة</span>
+            </div>
+            <div class="status-box" style="background-color: #5e8059;">
+                <h3>تحت التنفيذ</h3>
+                <p>1</p>
+                <span>من أصل 17 مهمة</span>
+            </div>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="chart-container full-width">
+            <h3>توزيع المهام حسب الحالة</h3>
+            <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+                <div style="text-align: center;">
+                    <div style="width: 40px; height: 40px; background-color: #a78645; margin: 0 auto;"></div>
+                    <p>مكتمل (9)</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 40px; height: 40px; background-color: #a99163; margin: 0 auto;"></div>
+                    <p>قيد التنفيذ (6)</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 40px; height: 40px; background-color: #776262; margin: 0 auto;"></div>
+                    <p>متأخر (1)</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 40px; height: 40px; background-color: #5e8059; margin: 0 auto;"></div>
+                    <p>حالات أخرى (1)</p>
+                </div>
+            </div>
+            <canvas id="statusChart" height="100"></canvas>
+        </div>
+
+        <div class="charts-row">
+        <!-- Department Distribution Pie Chart -->
+            <div class="chart-box">
+                <div class="chart-container">
+                    <h3>توزيع المهام حسب الإدارات</h3>
+                    <canvas id="deptChart"></canvas>
+                </div>
+                <table class="dept-table">
+                    <thead>
+                        <tr>
+                            <th>الإدارة</th>
+                            <th>عدد المهام</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>امتياز العملاء</td><td>5</td></tr>
+                        <tr><td>إدارة التطوير والاستثمار</td><td>2</td></tr>
+                        <tr><td>الإدارة المالية</td><td>2</td></tr>
+                        <tr><td>إدارة الموارد البشرية</td><td>3</td></tr>
+                        <tr><td>PMO</td><td>2</td></tr>
+                        <tr><td>القطاع التجاري</td><td>2</td></tr>
+                        <tr><td>CEO</td><td>1</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Expected Completion Timeline -->
+            <div class="chart-box">
+                <div class="chart-container">
+                    <h3>التاريخ المتوقع للإنجاز</h3>
+                    <canvas id="timelineChart"></canvas>
+                </div>
+                <table class="dept-table">
+                    <thead>
+                        <tr>
+                            <th>الشهر</th>
+                            <th>عدد المهام</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>مايو 2025</td><td>2</td></tr>
+                        <tr><td>يونيو 2025</td><td>1</td></tr>
+                        <tr><td>أغسطس 2025</td><td>1</td></tr>
+                        <tr><td>بدون تاريخ محدد</td><td>13</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Department Status Heatmap -->
+        <div class="chart-container full-width">
+            <h3>حالة المهام حسب الإدارة</h3>
+            <canvas id="deptStatusChart" height="300"></canvas>
+        </div>
+
+        <!-- Tabs for different views -->
+        <div class="tabs">
+            <div class="tab active" data-target="completedTasks">مكتمل</div>
+            <div class="tab" data-target="inProgressTasks">قيد التنفيذ</div>
+            <div class="tab" data-target="waitingTasks">متأخر</div>
+            <div class="tab" data-target="underExecutionTasks">حالات أخرى</div>
+        </div>
+
+        <!-- Completed Tasks Tab -->
+        <div id="completedTasks" class="tab-content active">
+            <h3>المهام المكتملة</h3>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>الحالة</th>
+                        <th>البند</th>
+                        <th>الإدارة المعنية</th>
+                        <th>توجيهات المجلس</th>
+                        <th>التاريخ المتوقع للانتهاء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>1</td>
+                        <td>امتياز العملاء</td>
+                        <td>وجه المجلس بتحديد التواريخ والمدد الزمنية المتعلقة لكافة عمليات ومراحل امتياز العملاء التي يتم استعراضها.</td>
+                        <td>مايو 2025</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>8</td>
+                        <td>PMO</td>
+                        <td>إعادة تعريف المخزون</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>12</td>
+                        <td>إدارة الموارد البشرية</td>
+                        <td>وافق المجلس على اعتماد المكافآة السنوية للموظفين بحيث يكون الصرف حسب السياسات المعتمدة لذلك.</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>13</td>
+                        <td>PMO</td>
+                        <td>طلب المجلس بأن يتم مراجعة تعريف المخزون بالتنسيق مع اللجنة التنفيذية واستعراضه في اجتماع المجلس القادم.</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>7</td>
+                        <td>الإدارة التنفيذية</td>
+                        <td>التعامل مع قرار مجلس الوزراء بشأن التيار الكهربائي</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>16</td>
+                        <td>القطاع التجاري</td>
+                        <td>طلب المجلس أن يتم استعراض تصنيف المبيعات و نوعية العملاء بشكل أكبر في الاجتماع القادم.</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>17</td>
+                        <td>القطاع التجاري- التسويق</td>
+                        <td>وجه المجلس بأن يتم التركيز بشكل أكبر على المستثمرين من حيث الاستهداف في التسويق وتقديم الخدمات.</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>18</td>
+                        <td>CEO</td>
+                        <td>دراسة التأمين على أعمال أعضاء المجلس بالحد الأعلى عشرة ملايين ريال.</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge completed">مكتمل</span></td>
+                        <td>6</td>
+                        <td>الإدارة التنفيذية</td>
+                        <td>توضيح عدد الوحدات المراد تنفيذها (1632 وحدة)</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- In Progress Tasks Tab -->
+        <div id="inProgressTasks" class="tab-content">
+            <h3>المهام قيد التنفيذ</h3>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>الحالة</th>
+                        <th>البند</th>
+                        <th>الإدارة المعنية</th>
+                        <th>توجيهات المجلس</th>
+                        <th>التاريخ المتوقع للانتهاء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="status-badge in-progress">قيد التنفيذ</span></td>
+                        <td>14</td>
+                        <td>إدارة المشاريع-قطاع التطوير والاستثمار</td>
+                        <td>ضمان توافق المنتجات الجديدة مع متطلبات السوق</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge in-progress">قيد التنفيذ</span></td>
+                        <td>2</td>
+                        <td>امتياز العملاء</td>
+                        <td>أكد المجلس على أهمية أن يكون قطاع امتياز العملاء قريباً من إدارات الشركة الأخرى.</td>
+                        <td>اجتماعات متلاحقة</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge in-progress">قيد التنفيذ</span></td>
+                        <td>4</td>
+                        <td>امتياز العملاء</td>
+                        <td>توضيح المستهدفات والمقارنة المعيارية مع السوق لامتياز العملاء</td>
+                        <td>أغسطس 2025</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge in-progress">قيد التنفيذ</span></td>
+                        <td>5</td>
+                        <td>امتياز العملاء</td>
+                        <td>إضافة معدل رضا العملاء كأحد مؤشرات الأداء على إدارات الشركة المعنية</td>
+                        <td>يونيو 2025</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge in-progress">قيد التنفيذ</span></td>
+                        <td>6</td>
+                        <td>إدارة التطوير والاستثمار</td>
+                        <td>تحسين العرض المتعلق بمقارنات الأداء بمزيد من التوضيح للرسوم البيانية</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge in-progress">قيد التنفيذ</span></td>
+                        <td>10</td>
+                        <td>إدارة الموارد البشرية</td>
+                        <td>تعيين مسؤول لعلاقات المستثمرين قبل عملية الطرح</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Delayed Tasks Tab -->
+        <div id="waitingTasks" class="tab-content">
+            <h3>المهام المتأخرة</h3>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>الحالة</th>
+                        <th>البند</th>
+                        <th>الإدارة المعنية</th>
+                        <th>توجيهات المجلس</th>
+                        <th>التاريخ المتوقع للانتهاء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="status-badge delayed">متأخر</span></td>
+                        <td>15</td>
+                        <td>إدارة الموارد البشرية</td>
+                        <td>تحديث الهيكل التنظيمي</td>
+                        <td>15-10-2024</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Under Execution Tasks Tab -->
+        <div id="underExecutionTasks" class="tab-content">
+            <h3>المهام الأخرى</h3>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>الحالة</th>
+                        <th>البند</th>
+                        <th>الإدارة المعنية</th>
+                        <th>توجيهات المجلس</th>
+                        <th>التاريخ المتوقع للانتهاء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="status-badge waiting">بانتظار الموافقة</span></td>
+                        <td>3</td>
+                        <td>امتياز العملاء</td>
+                        <td>تحسين تجربة العملاء في كافة المشاريع</td>
+                        <td>سيتم التحديد بعد الموافقة على الميزانية</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge waiting">تحت التنفيذ</span></td>
+                        <td>9</td>
+                        <td>الإدارة المالية</td>
+                        <td>تفصيل بيانات الإيرادات لبيع العقارات المكتملة مقارنة بالبيع على الخارطة</td>
+                        <td>مايو 2025</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+         document.addEventListener("DOMContentLoaded", function() {
+            // Get all tabs
+            const tabs = document.querySelectorAll('.tab');
+            
+            // Add click event to each tab
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Hide all content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    // Remove active class from all tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const targetId = this.getAttribute('data-target');
+                    const targetContent = document.getElementById(targetId);
+                    if (targetContent) {
+                        targetContent.style.display = 'block';
+                    }
+                });
+            });
+            
+            // Activate first tab by default (or keep the active one if already set)
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab) {
+                activeTab.click();
+            } else if (tabs.length > 0) {
+                tabs[0].click();
+            }
+        });
+    </script>
+
+    <script>
+        // Status data
+        const statusData = {
+            labels: ['تم', 'قيد التنفيذ', 'بانتظار الموافقة', 'تحت التنفيذ'],
+            datasets: [{
+                label: 'عدد المهام',
+                data: [9, 6, 1, 1],
+                backgroundColor: [
+                    '#a78645',
+                    '#a99163',
+                    '#776262',
+                    '#5e8059'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        // Department data
+        const deptData = {
+            labels: ['امتياز العملاء', 'إدارة التطوير والاستثمار', 'الإدارة المالية', 'إدارة الموارد البشرية', 'PMO', 'القطاع التجاري', 'CEO'],
+            datasets: [{
+                label: 'عدد المهام',
+                data: [5, 2, 2, 3, 2, 2, 1],
+                backgroundColor: [
+                    '#264653', /* امتياز العملاء */
+                    '#2a9d8f', /* إدارة التطوير والاستثمار */
+                    '#8ab17e', /* الإدارة المالية */
+                    '#e9c46a', /* إدارة الموارد البشرية */
+                    '#f4a261', /* PMO */
+                    '#e76f51', /* القطاع التجاري */
+                    '#d62828'  /* CEO */
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        // Timeline data
+        const timelineData = {
+            labels: ['مايو 2025', 'يونيو 2025', 'أغسطس 2025', 'بدون تاريخ محدد'],
+            datasets: [{
+                label: 'عدد المهام',
+                data: [2, 1, 1, 13],
+                backgroundColor: '#a78645',
+                borderWidth: 1
+            }]
+        };
+
+        // Department status data for heatmap (This part needs to be adapted to the new Chart.js version)
+        const deptStatusData = {
+            labels: ['امتياز العملاء', 'إدارة التطوير والاستثمار', 'الإدارة المالية', 'إدارة الموارد البشرية', 'PMO', 'القطاع التجاري', 'CEO'],
+            datasets: [
+                {
+                    label: 'تم',
+                    data: [1, 0, 1, 1, 2, 2, 1],
+                    backgroundColor: '#a78645',
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'قيد التنفيذ',
+                    data: [3, 2, 0, 1, 0, 0, 0],
+                    backgroundColor: '#a99163',
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'بانتظار الموافقة',
+                    data: [0, 0, 0, 1, 0, 0, 0],
+                    backgroundColor: '#776262',
+                    stack: 'Stack 0',
+                },
+               {
+                    label: 'تحت التنفيذ',
+                    data: [1, 0, 1, 0, 0, 0, 0],
+                    backgroundColor: '#5e8059',
+                    stack: 'Stack 0',
+                }
+            ]
+        };
+
+        // Chart configurations
+        const chartConfig = {
+            type: 'bar',
+            data: statusData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        };
+
+        const pieConfig = {
+            type: 'pie',
+            data: deptData,
+        };
+
+        const timelineConfig = {
+            type: 'line',
+            data: timelineData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        };
+
+         const deptStatusConfig = {
+            type: 'bar', // Use 'bar' for stacked bars
+            data: deptStatusData,
+            options: {
+                indexAxis: 'y',
+                plugins: {
+                  title: {
+                       display: false,
+                  },
+                },
+                responsive: true,
+                scales: {
+                    x: {
+                        stacked: true,  // This is crucial for stacking
+                        title: {
+                            display: false,  // Customize the title
+                            text: 'Count'
+                        }
+                    },
+                    y: {
+                        stacked: true,   // Keep Y axis stacked
+                        title: {
+                            display: false,
+                            text: 'Department'
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initialize charts
+        const statusChart = new Chart(
+            document.getElementById('statusChart'),
+            chartConfig
+        );
+
+        const deptChart = new Chart(
+            document.getElementById('deptChart'),
+            pieConfig
+        );
+
+        const timelineChart = new Chart(
+            document.getElementById('timelineChart'),
+            timelineConfig
+        );
+
+        const deptStatusChart = new Chart(
+            document.getElementById('deptStatusChart'),
+            deptStatusConfig
+        );
+    </script>
+</body>
+</html>
