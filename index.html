@@ -37,11 +37,15 @@
             margin-bottom: 20px;
         }
         .chart-box {
-            width: 48%; /* Adjusted for table */
-            margin-bottom: 20px;
-            display: flex; /* Add flexbox to align chart and table */
-            flex-direction: row;  /* Align items horizontally */
-            align-items: center; /* Vertically center items */
+             width: 100%; /* Take up full width */
+            display: flex;
+            /* Add flexbox to align chart and table */
+            flex-direction: row;
+            /* Align items horizontally */
+            align-items: stretch;
+            /* Stretch items vertically */
+            justify-content: space-between;
+            /* Space chart and table evenly */
         }
         .full-width {
             width: 100%;
@@ -145,13 +149,14 @@
             margin-bottom: 30px;
         }
 
-        .dept-table {  /* Styles for the department table */
-            width: 50%; /* Adjust width as needed */
+        .dept-table {
+            width: 48%; /* Adjust width as needed */
             border-collapse: collapse;
-            margin-right: 10px; /* Space between chart and table */
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-radius: 8px;
             overflow: hidden; /* Ensures rounded corners are respected */
+            display: block;
+
         }
 
         .dept-table th, .dept-table td {
@@ -174,18 +179,25 @@
         }
 
         @media (max-width: 768px) {
-            .chart-box {
-                width: 100%;
-                flex-direction: column; /* Stack chart and table on small screens */
-                align-items: stretch; /* Occupy full width */
-            }
+             .chart-box {
+                  width: 100%;
+                  display: flex;
+                  /* Add flexbox to align chart and table */
+                  flex-direction: column;
+                  /* Align items horizontally */
+                  align-items: stretch;
+                  /* Stretch items vertically */
+                 }
+                 /* Vertically center items */
+
             .dept-table {
                 width: 100%;
-                margin-right: 0; /* Remove right margin */
-            }
-            .status-summary {
-                flex-direction: column;
-                gap: 10px;
+                margin-right: 0;
+                /* Remove right margin */
+                max-width: none;
+                /* Remove maximum width */
+                overflow-x: auto;
+                /* Enable horizontal scrolling if table exceeds container */
             }
         }
 
@@ -271,7 +283,6 @@
                 </table>
             </div>
 
-        
         </div>
 
         <!-- Tabs for different views -->
@@ -287,6 +298,7 @@
             <table class="task-table">
                 <thead>
                     <tr>
+                        <th>الحالة</th>
                         <th>البند</th>
                         <th>الإدارة المعنية</th>
                         <th>توجيهات المجلس</th>
@@ -295,90 +307,105 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>1</td>
                         <td>مجلس الأدارة</td>
                         <td>طلب المجلس من الإدارة التنفيذية إضافة التواريخ المتوقعة لتنفيذ القرارات والمسؤول عنها سواء كانت الإدارة التنفيذية أو أحد لجان المجلس.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>2</td>
                         <td>مجلس الأدارة</td>
                         <td>أشار المجلس إلى أن بعض القرارات لم تتم الإفادة بإنجازها ثم وجه بأن يتم القيام بذلك الاجتماع القادم.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>4</td>
                         <td>مكتب إدارة المشاريع</td>
                         <td>طلب المجلس من مستشاري الطرح مشاركة مؤشرات الأداء للشركات التي تعمل في القطاع العقاري من منظور محللي السوق بشكل جوهري لتكون أحد الأدوات التي تخدم المجلس والشركة في تقييم أدائها، بحيث يتم استعراضها في اجتماعات المجلس القادمة بشكل مستمر.</td>
                         <td>31-12-2024</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>5</td>
                         <td>مكتب إدارة المشاريع</td>
                         <td>طلب المجلس من مستشاري الطرح بالتأكد من أن هيكل الشركة الحالي وإجراءاتها المالية متوافقة مع متطلبات كون أسهم الشركة نقية.</td>
                         <td>18-12-2024</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>6</td>
                         <td>الإدارة التنفيذية</td>
                         <td>طلب المجلس من الإدارة التنفيذية أن يتم توضيح عدد الوحدات المراد تنفيذها خلال العام الجاري ومقارنته بما تم تنفيذه.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>7</td>
                         <td>الإدارة التنفيذية</td>
                         <td>أشار المجلس إلى النظام الجديد الصادر من مجلس الوزراء حول عدم إطلاق التيار الكهربائي إلا بعد صدور شهادة إتمام البناء، ثم وجه الإدارة التنفيذية بالتعامل مع النظام الجديد لتلافي التأخير في سير أعمال الشركة.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>8</td>
                         <td>الإدارة التنفيذية</td>
                         <td>وجه المجلس الادارة التنفيذية بالعمل على اعادة تعريف المخزون بحيث يمكن من خلاله متابعة أعمال الشركة والإدارات المعنية على ان يتم مناقشة ذلك باللجنة التنفيذية والرفع للمجلس بما يتم التوصل إليه.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>9</td>
                         <td>إدارة رأس المال البشري</td>
                         <td>طلب المجلس من إدارة رأس المال البشري العمل على إعداد باقة متكاملة من الامتيازات تتضمن برنامج الحفاظ على الموظفين والمكافآت السنوية وغيرها بحيث تتصف بالشمولية وتعزز من حفاظ الشركة على الكفاءات بالإضافة إلى زيادة قدرة الشركة على الاستقطاب.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>10</td>
                         <td>إدارة رأس المال البشري</td>
                         <td>اعتمد مجلس الإدارة سلم الأجور الموصى به من لجنة الترشيحات والمكافآت على أن يتم العمل على الباقة المتكاملة للتعويضات مع الافادة بما يخص أثر ذلك على المصاريف الإدارية وعرضها على المجلس في اجتماعه القادم.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>11</td>
                         <td>إدارة رأس المال البشري</td>
                         <td>أكد المجلس على أهمية حوافز المبيعات والمشاريع ومراعاة اختلاف طبيعة العمل والمعايير في كل منها.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>12</td>
                         <td>إدارة رأس المال البشري</td>
                         <td>وافق المجلس على اعتماد الهيكل التنظيمي الموافق عليه من قبل لجنة الترشيحات والمكافآت.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>13</td>
                         <td>إدارة المشاريع</td>
                         <td>وجه المجلس الإدارة التنفيذية بالعمل على الاستفادة من تجربة مشروع دروازة لتلافي أي تحديات مماثلة في المستقبل، بالإضافة إلى عمل مقارنة مع مشاريع مشابهة من جوانب مختلفة ليكون هناك تصور أوضح عن التحديات في المشروع.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>16</td>
                         <td>إدارة المبيعات</td>
                         <td>إعداد خطة تسويقية للمنتجات الجديدة</td>
                         <td>25-9-2024</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>17</td>
                         <td>الإدارة المالية</td>
                         <td>إعداد تقرير عن التدفقات النقدية المتوقعة للربع الرابع</td>
                         <td>30-9-2024</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status completed">مكتمل</span> </td>
                         <td>19</td>
                         <td>إدارة المشاريع</td>
                         <td>دراسة جدوى للمشاريع المقترحة للعام القادم</td>
@@ -394,6 +421,7 @@
             <table class="task-table">
                 <thead>
                     <tr>
+                        <th>الحالة</th>
                         <th>البند</th>
                         <th>الإدارة المعنية</th>
                         <th>توجيهات المجلس</th>
@@ -402,18 +430,21 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td> <span class="dept-status in-progress">قيد التنفيذ</span> </td>
                         <td>3</td>
                         <td>اللجنة التنفيذية</td>
                         <td>وجه المجلس الإدارة التنفيذية بمتابعة المشاريع والمبادرات الاستراتيجية بمفهومها الواسع والتي تتضمن المشاريع الإدارية والمشاريع التنفيذية وذلك بإشراف اللجنة التنفيذية.</td>
                         <td>يناير 2025</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status in-progress">قيد التنفيذ</span> </td>
                         <td>14</td>
                         <td>إدارة المشاريع-قطاع التطوير والاستثمار</td>
                         <td>أكد المجلس على أنه يجب على الإدارة التنفيذية أن تلتزم بأنه في حال تقديم منتجات جديدة عمل الدراسات اللازمة لتكون متوافقة مع متطلبات السوق، بالإضافة إلى أهمية مراعاة اعتماد التصاميم بآلية تضمن مراجعتها من جميع الأطراف المعنية بالشركة.</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td> <span class="dept-status in-progress">قيد التنفيذ</span> </td>
                         <td>18</td>
                         <td>إدارة تقنية المعلومات</td>
                         <td>تطوير نظام متابعة المشاريع الإلكتروني</td>
@@ -429,6 +460,7 @@
             <table class="task-table">
                 <thead>
                     <tr>
+                        <th>الحالة</th>
                         <th>البند</th>
                         <th>الإدارة المعنية</th>
                         <th>توجيهات المجلس</th>
@@ -437,6 +469,7 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td> <span class="dept-status delayed">متأخر</span> </td>
                         <td>15</td>
                         <td>إدارة رأس المال البشري</td>
                         <td>تحديث الهيكل التنظيمي للشركة وفقًا للمتغيرات الجديدة</td>
@@ -483,7 +516,15 @@
                 label: 'عدد المهام',
                 data: [2, 1, 2, 3, 4, 3, 1, 1, 1],
                 backgroundColor: [
-                    '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688'
+                    '#264653', /* مجلس الإدارة */
+                    '#2a9d8f', /* اللجنة التنفيذية */
+                    '#8ab17e', /* مكتب إدارة المشاريع */
+                    '#e9c46a', /* الإدارة التنفيذية */
+                    '#f4a261', /* إدارة رأس المال البشري */
+                    '#e76f51', /* إدارة المشاريع */
+                    '#d62828', /* إدارة المبيعات */
+                    '#9d0208', /* الإدارة المالية */
+                    '#370617' /* إدارة تقنية المعلومات */
                 ],
                 borderWidth: 1
             }]
