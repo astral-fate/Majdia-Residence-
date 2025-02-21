@@ -1,0 +1,380 @@
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// تعريف بيانات المهام
+const previousTasksData = [
+  { id: 1, department: "قطاع الأعمال التجارية", directive: "طلب المجلس من الإدارة التنفيذية إضافة مقارنات الأداء في المبيعات والمخزون مع التعليقات المرتبطة بالارتفاع أو الانخفاض في الأداء عند استعراضها", status: "تم العمل على ذلك", notes: "تم", expectedDate: "" },
+  { id: 2, department: "إدارة المرافق", directive: "وجه المجلس الإدارة التنفيذية بأن يتم العمل على التحول الرقمي لعملاء الشركة، بحيث يتم تحويل خدمة العميل إلى خدمة رقمية بالكامل والعمل على تحسين تجربته", status: "مرفق التحديث", notes: "", expectedDate: "بداية عام 2025" },
+  { id: 3, department: "قطاع الأعمال التجارية", directive: "وجه المجلس الإدارة التنفيذية بمراجعة أن يتم فصل التأجير عن التطوير إدارياً ومالياً وقانونياً وذلك لحماية الشركة من أي أخطار محتملة", status: "تحت الدراسة", notes: "", expectedDate: "الربع الثاني لعام 2025" },
+  { id: 4, department: "الإدارة التنفيذية", directive: "وجه المجلس الإدارة التنفيذية بوضع مقترح لسياسة الاقتراض وتمويل المشاريع وعرضها على المجلس لمراجعتها ثم اعتمادها", status: "جاري العمل", notes: "تم الانتهاء من المسودات وجاري العمل على اخذ الموافقات اللازمة من اللجان والمجلس تباعا", expectedDate: "ديسمبر 2024" },
+];
+
+// ألوان الهوية البصرية
+const COLORS = ['#a78645', '#eeece1', '#776262', '#a99163'];
+
+// تحويل حالة المهام إلى تصنيف موحد للرسوم البيانية
+const getStandardStatus = (status) => {
+  if (status === "تم العمل على ذلك") return "مكتمل";
+  if (status === "مرفق التحديث") return "جاري العمل";
+  if (status === "تحت الدراسة") return "قيد الدراسة";
+  if (status === "جاري العمل") return "جاري العمل";
+  return status;
+};
+
+export default function PreviousMeetingsDashboard() {
+  const [activeTab, setActiveTab] = useState('summary');
+
+  // حساب إحصائيات حالة المهام
+  const statusMap = {};
+  previousTasksData.forEach(task => {
+    const standardStatus = getStandardStatus(task.status);
+    statusMap[standardStatus] = (statusMap[standardStatus] || 0) + 1;
+  });
+  
+  const statusStats = Object.keys(statusMap).map(status => ({
+    name: status,
+    value: statusMap[status]
+  }));
+
+  // حساب إحصائيات الإدارات
+  const departmentCounts = {};
+  previousTasksData.forEach(task => {
+    if (departmentCounts[task.department]) {
+      departmentCounts[task.department]++;
+    } else {
+      departmentCounts[task.department] = 1;
+    }
+  });
+
+  const departmentStats = Object.keys(departmentCounts).map(dept => ({
+    name: dept,
+    value: departmentCounts[dept]
+  }));
+
+  // بيانات للرسم البياني الشريطي
+  const barChartData = statusStats.map((item, index) => ({
+    name: item.name,
+    count: item.value,
+    fill: COLORS[index % COLORS.length]
+  }));
+
+  // بيانات الجدول الزمني
+  const timelineData = previousTasksData
+    .filter(task => task.expectedDate)
+    .map(task => {
+      let period = "";
+      if (task.expectedDate.includes("2025")) {
+        period = "2025";
+      } else if (task.expectedDate.includes("ديسمبر")) {
+        period = "Q4 2024";
+      }
+      return {
+        ...task,
+        period
+      };
+    });
+
+  return (
+    <div className="rtl text-right" style={{ fontFamily: 'Arial, sans-serif', direction: 'rtl' }}>
+      <div className="p-4 bg-white rounded-lg mb-4" style={{ backgroundColor: COLORS[1], color: '#333' }}>
+        <h1 className="text-2xl font-bold mb-2" style={{ color: COLORS[0] }}>لوحة معلومات الاجتماعات السابقة من العام 2024</h1>
+        <p className="mb-4">ملخص بنود وتوجيهات المجلس والحالة</p>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="shadow-md" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+            <CardHeader className="pb-2">
+              <CardTitle style={{ color: COLORS[0], fontSize: '1.1rem' }}>إجمالي البنود</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl md:text-3xl font-bold" style={{ color: COLORS[2] }}>{previousTasksData.length}</p>
+            </CardContent>
+          </Card>
+          
+          {statusStats.map((stat, index) => (
+            <Card key={index} className="shadow-md" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+              <CardHeader className="pb-2">
+                <CardTitle style={{ color: COLORS[0], fontSize: '1.1rem' }}>{stat.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl md:text-3xl font-bold" style={{ color: COLORS[index % COLORS.length] }}>{stat.value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* العدد الزمني المتوقع للإنجاز */}
+        <Card className="shadow-md mb-6" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+          <CardHeader className="pb-2">
+            <CardTitle style={{ color: COLORS[0] }}>الإطار الزمني المتوقع للإنجاز</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-12 bg-gray-200 mb-4 flex rounded-lg overflow-hidden">
+              {timelineData.map((task, index) => {
+                const width = 100 / timelineData.length;
+                return (
+                  <div 
+                    key={index}
+                    className="h-full flex items-center justify-center text-white text-xs px-2"
+                    style={{ 
+                      width: `${width}%`,
+                      backgroundColor: task.period === '2025' ? COLORS[3] : COLORS[0]
+                    }}
+                    title={task.directive}
+                  >
+                    {task.period}
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="grid grid-cols-2 text-sm">
+              <div>
+                <span className="inline-block w-3 h-3 mr-1 rounded-full" style={{ backgroundColor: COLORS[0] }}></span>
+                <span>Q4 2024</span>
+              </div>
+              <div>
+                <span className="inline-block w-3 h-3 mr-1 rounded-full" style={{ backgroundColor: COLORS[3] }}></span>
+                <span>عام 2025</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+          {/* رسم بياني دائري لحالة المهام */}
+          <Card className="shadow-md" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+            <CardHeader className="pb-2">
+              <CardTitle style={{ color: COLORS[0] }}>توزيع البنود حسب الحالة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statusStats}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {statusStats.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value} بند`, 'العدد']} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* رسم بياني شريطي لعدد البنود حسب الحالة */}
+          <Card className="shadow-md" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+            <CardHeader className="pb-2">
+              <CardTitle style={{ color: COLORS[0] }}>حالة البنود</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={barChartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${value} بند`, 'العدد']} />
+                    <Legend />
+                    <Bar 
+                      dataKey="count"
+                      name="عدد البنود"
+                      radius={[5, 5, 0, 0]}
+                    >
+                      {barChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* رسم بياني دائري للإدارات */}
+        <Card className="shadow-md mb-6" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+          <CardHeader className="pb-2">
+            <CardTitle style={{ color: COLORS[0] }}>توزيع البنود حسب الإدارة المعنية</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={departmentStats}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {departmentStats.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} بند`, 'العدد']} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* جدول توزيع مهام الاجتماعات السابقة */}
+        <Card className="shadow-md" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+          <CardHeader className="pb-2">
+            <CardTitle style={{ color: COLORS[0] }}>جدول بنود الاجتماعات السابقة</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-right">
+                <thead>
+                  <tr className="border-b" style={{ borderColor: COLORS[0] }}>
+                    <th className="p-2" style={{ color: COLORS[0] }}>الرقم</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>الإدارة المعنية</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>توجيهات المجلس</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>الحالة</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>التاريخ المتوقع</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>الملاحظات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {previousTasksData.map((task) => {
+                    const standardStatus = getStandardStatus(task.status);
+                    let statusColor = COLORS[0];
+                    
+                    if (standardStatus === "مكتمل") statusColor = COLORS[0];
+                    else if (standardStatus === "جاري العمل") statusColor = COLORS[3];
+                    else if (standardStatus === "قيد الدراسة") statusColor = COLORS[2];
+                    
+                    return (
+                      <tr key={task.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{task.id}</td>
+                        <td className="p-2">{task.department}</td>
+                        <td className="p-2 max-w-xs">{task.directive}</td>
+                        <td className="p-2">
+                          <span 
+                            className="px-2 py-1 rounded-full text-white text-xs"
+                            style={{ backgroundColor: statusColor }}
+                          >
+                            {task.status}
+                          </span>
+                        </td>
+                        <td className="p-2">{task.expectedDate || "-"}</td>
+                        <td className="p-2 max-w-xs">{task.notes || "-"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* توزيع المهام حسب الإدارات */}
+        <Card className="shadow-md mt-6" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+          <CardHeader className="pb-2">
+            <CardTitle style={{ color: COLORS[0] }}>توزيع البنود حسب الإدارة المعنية</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-right">
+                <thead>
+                  <tr className="border-b" style={{ borderColor: COLORS[0] }}>
+                    <th className="p-2" style={{ color: COLORS[0] }}>الإدارة المعنية</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>عدد البنود</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>مكتمل</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>جاري العمل</th>
+                    <th className="p-2" style={{ color: COLORS[0] }}>قيد الدراسة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.keys(departmentCounts).map((dept, index) => {
+                    const totalDeptTasks = previousTasksData.filter(task => task.department === dept);
+                    const completedTasks = totalDeptTasks.filter(task => getStandardStatus(task.status) === "مكتمل").length;
+                    const inProgressTasks = totalDeptTasks.filter(task => getStandardStatus(task.status) === "جاري العمل").length;
+                    const underStudyTasks = totalDeptTasks.filter(task => getStandardStatus(task.status) === "قيد الدراسة").length;
+                    
+                    return (
+                      <tr key={index} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{dept}</td>
+                        <td className="p-2">{totalDeptTasks.length}</td>
+                        <td className="p-2">{completedTasks}</td>
+                        <td className="p-2">{inProgressTasks}</td>
+                        <td className="p-2">{underStudyTasks}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* خريطة حرارية مبسطة للإدارات والحالات */}
+        <Card className="shadow-md mt-6" style={{ backgroundColor: 'white', borderColor: COLORS[0], borderWidth: '1px' }}>
+          <CardHeader className="pb-2">
+            <CardTitle style={{ color: COLORS[0] }}>خريطة توزيع البنود</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {Object.keys(departmentCounts).map((dept, deptIndex) => {
+                return (
+                  <div key={deptIndex} className="border rounded-md p-2" style={{ borderColor: COLORS[0] }}>
+                    <h3 className="text-lg font-bold mb-2" style={{ color: COLORS[0] }}>{dept}</h3>
+                    <div className="space-y-2">
+                      {previousTasksData
+                        .filter(task => task.department === dept)
+                        .map((task, taskIndex) => {
+                          const standardStatus = getStandardStatus(task.status);
+                          let bgColor = 'rgba(167, 134, 69, 0.1)'; // Default color with opacity
+                          
+                          if (standardStatus === "مكتمل") bgColor = 'rgba(167, 134, 69, 0.3)';
+                          else if (standardStatus === "جاري العمل") bgColor = 'rgba(169, 145, 99, 0.3)';
+                          else if (standardStatus === "قيد الدراسة") bgColor = 'rgba(119, 98, 98, 0.3)';
+                          
+                          return (
+                            <div 
+                              key={taskIndex} 
+                              className="p-2 rounded-md" 
+                              style={{ backgroundColor: bgColor }}
+                            >
+                              <div className="text-sm">{task.directive.substring(0, 70)}...</div>
+                              <div className="text-xs mt-1 flex justify-between">
+                                <span>{task.status}</span>
+                                <span>{task.expectedDate || ""}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="text-center text-sm mt-8 pb-4" style={{ color: COLORS[2] }}>
+        © {new Date().getFullYear()} - تقرير قرارات وتوجيهات مجلس الإدارة - الاجتماعات السابقة 2024
+      </div>
+    </div>
+  );
+}
