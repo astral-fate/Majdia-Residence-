@@ -223,9 +223,51 @@
         .dept-status.delayed {
             background-color: #776262;  /* Dark Brown */
         }
+         .navigation {
+            background-color: #776262;
+            /* Choose your desired background color */
+            overflow: hidden;
+            /* Hides any content that overflows */
+            display: flex;
+            justify-content: center; /* Center items horizontally */
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .nav-link {
+            float: right;
+            display: block;
+            color: white;
+            /* Sets the text color to white */
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            /* Removes underline from links */
+            transition: background-color 0.3s, color 0.3s;
+            /* Smooth transition for hover effects */
+        }
+
+        .nav-link:hover {
+            background-color: #a78645;
+            /* Slightly darker shade on hover */
+            color: white;
+            /* Maintains white text color on hover */
+        }
+
+        /* Style for the active/current link */
+        .nav-link.active {
+            background-color: #a78645;
+            /* Sets a distinct background for the active page */
+            color: white;
+            /* Ensures active link text is visible */
+        }
     </style>
 </head>
 <body>
+    <div class="navigation">
+     <a href="index.html" class="nav-link">الربع الثالث 2024</a>
+     <a href="Q2.html" class="nav-link">الربع الرابع 2024</a>
+ </div>
     <div class="container">
         <h1>لوحة متابعة قرارات وتوجيهات مجلس الإدارة</h1>
         <h2>الربع الثالث من العام 2024</h2>
